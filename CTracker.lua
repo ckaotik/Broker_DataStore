@@ -1,7 +1,7 @@
-local iconSize = 16
+local iconSize = 15
 
 -- event frame
-local f = CreateFrame('Frame', 'CTracker', UIParent)
+local f = CreateFrame("Frame", "CTracker", UIParent)
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 f:RegisterEvent("HONOR_CURRENCY_UPDATE")
@@ -9,8 +9,8 @@ f:RegisterEvent("KNOWN_CURRENCY_TYPES_UPDATE")
 f:RegisterEvent("CHAT_MSG_LOOT")	-- test
 
 -- options frame
-local frame = CreateFrame('Frame', 'CTrackerOptionsFrame', InterfaceOptionsFramePanelContainer)
-frame.name = 'CTracker'
+local frame = CreateFrame("Frame", "CTracker_OptionsPanel", InterfaceOptionsFramePanelContainer)
+frame.name = "Broker_CTracker"
 f.option = frame
 InterfaceOptions_AddCategory(frame)
 
@@ -43,7 +43,7 @@ end
 local function GetMarkIcon(itemID)
 	if itemID == 43308 then
 		-- honor points
-		return "Interface\\AddOns\\CTracker\\"..UnitFactionGroup("player")
+		return "Interface\\AddOns\\Broker_CTracker\\"..UnitFactionGroup("player")
 	elseif itemID == 43307 then
 		-- arena points
 		return "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"
@@ -192,9 +192,10 @@ end
 
 -- for the options frame in the interface menu
 local function CreateOptions()
+	local frame = _G["CTracker_OptionsPanel"]
 	local title = frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLarge')
 		title:SetPoint('TOPLEFT', 16, -16)
-		title:SetText('CTracker')
+		title:SetText('Broker_CTracker')
 
 	local about = frame:CreateFontString(nil, 'ARTWORK', 'GameFontHighlightSmall')
 		about:SetPoint('TOPLEFT', title, 'BOTTOMLEFT', 0, -10)
@@ -225,18 +226,14 @@ local function CreateOptions()
 	end
 	
 	-- make the box-frame scrollable
-	local CheckBoxBox = CreateFrame("ScrollFrame", "CheckBoxBox", frame, "UIPanelScrollFrameTemplate")
-	local CBB_Scroll = CreateFrame("Frame", "CBB_Scroll", CheckBoxBox)
-	CheckBoxBox:SetScrollChild(CBB_Scroll)
+	local CheckBoxBox = CreateFrame("ScrollFrame", "CTracker_OptionsPanelScrollFrame", frame, "UIPanelScrollFrameTemplate")
 	CheckBoxBox:SetPoint("TOPLEFT", checkboxabout, 0,-20)
-	CheckBoxBox:SetPoint("BOTTOMRIGHT", frame, -27,4)
-	CheckBoxBox:SetFrameStrata("DIALOG")
-	CBB_Scroll:SetAllPoints(CheckBoxBox)
-	CBB_Scroll:SetHeight(300)
-	CBB_Scroll:SetWidth(300)
-
-	CheckBoxBox:Show()
-	CBB_Scroll:Show()
+	CheckBoxBox:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -27, 3)
+	local contentFrame = CreateFrame("Frame", nil, CheckBoxBox)
+	CheckBoxBox:SetScrollChild(contentFrame)
+	contentFrame:SetHeight(300)
+	contentFrame:SetWidth(300)
+	contentFrame:SetAllPoints()
 	
 	-- this belongs to the dropdown box
 	local function OnClick(self, charKey, parent)
@@ -253,7 +250,7 @@ local function CreateOptions()
 			info.value = charKey
 			info.func = OnClick
 			info.arg1 = charKey
-			info.arg2 = CBB_Scroll
+			info.arg2 = contentFrame
 			UIDropDownMenu_AddButton(info, level)
 		end
 	end
@@ -267,7 +264,7 @@ local function CreateOptions()
 	ToggleDropDownMenu(1, nil, CharSelect, self, -20, 0);
 	
 	-- load all relevant checkboxes for this character's currency list
-	CurrenciesCheckBoxes(character, CBB_Scroll)
+	CurrenciesCheckBoxes(character, contentFrame)
 end
 
 -- initialisation. kind of important
@@ -294,14 +291,15 @@ local function Init()
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Click for options")
 		
-		-- chow current character first
+		-- show current character first
 		if GetCurrencyString(character) ~= "" then
-			GameTooltip:AddDoubleLine(GetUnitName("player"),GetCurrencyString(character))
+			GameTooltip:AddDoubleLine(DataStore:GetClassColor(character)..GetUnitName("player"),GetCurrencyString(character))
 		end
 		for characterName, char in pairs(DataStore:GetCharacters()) do
 			local data = GetCurrencyString(char)
+			local color = DataStore:GetClassColor(char)
 			if data ~= "" and char ~= character then
-				GameTooltip:AddDoubleLine(characterName,data)
+				GameTooltip:AddDoubleLine(color..characterName,data)
 			end
 		end
 		

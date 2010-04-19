@@ -1,0 +1,15 @@
+## Interface: 30300
+## Title: Broker_CTracker
+## Notes: LDB plugin for all your currencies, accountwide
+## Notes-deDE: LDB Plugin, dass all deine PvP/PvE-Marken zeigt, accountweit
+## Author: ckaotik
+## Version: 3.3v2
+## Dependencies: DataStore, DataStore_Currencies, DataStore_Characters
+## SavedVariables: hideCurrency
+## SavedVariablesPerCharacter: 
+
+LibStub.lua
+CallbackHandler-1.0.lua
+LibDataBroker-1.1.lua
+
+CTracker.lua
