@@ -5,7 +5,7 @@ if IsAddOnLoaded("DataStore_Currencies") then
 	
 	function Broker_DS.currencies:GetMarkIcon(itemID, character)
 		if itemID == 43308 then			-- honor points
-			return "Interface\\AddOns\\_dev_Broker_DataStore\\media\\"..Broker_DS:GetFaction(character)			-- "Interface\\TargetingFrame\\UI-PVP-Alliance"
+			return "Interface\\AddOns\\Broker_DataStore\\media\\"..Broker_DS:GetFaction(character)			-- "Interface\\TargetingFrame\\UI-PVP-Alliance"
 		elseif itemID == 43307 then		-- arena points
 			return "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"
 		else
