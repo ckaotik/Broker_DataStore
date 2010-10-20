@@ -19,7 +19,11 @@ if IsAddOnLoaded("DataStore_Achievements") then
 				-- self:AddDoubleLine(Broker_DS:GetColoredCharacterName(char), currencyString)
 			end
 			if GameTooltip:NumLines() == 1 then
+<<<<<<< HEAD
 				self:AddLine(Broker_DS.locale.achievementsNone)
+=======
+				self:AddLine("Nothing to display here. Right-Click for options!")
+>>>>>>> origin/master
 			end
 		end
 	})

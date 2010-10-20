@@ -86,7 +86,10 @@ if IsAddOnLoaded("DataStore_Auctions") and IsAddOnLoaded("DataStore_Mails") then
 		OnTooltipShow = function(self)
 			self:AddDoubleLine("Broker_DataStore", Broker_DS.locale.auctions)
 			
+<<<<<<< HEAD
 			local numLines = 0
+=======
+>>>>>>> origin/master
 			for i=1, #Broker_DS.characters do
 				character = Broker_DS.characters[i].key
 				local auctionsString, bidsString, icon = Broker_DS.auctions:CreateDisplayString(character)
@@ -103,12 +106,17 @@ if IsAddOnLoaded("DataStore_Auctions") and IsAddOnLoaded("DataStore_Mails") then
                     end
 					
                     self:AddDoubleLine("|T"..icon..":0|t " .. Broker_DS:GetColoredCharacterName(character), dataString)
+<<<<<<< HEAD
 					numLines = numLines + 1
                 end
 			end
 			if numLines == 0 then
 				self:AddLine(Broker_DS.locale.auctionsClear)
 			end
+=======
+                end
+			end
+>>>>>>> origin/master
 		end
 	})
 	

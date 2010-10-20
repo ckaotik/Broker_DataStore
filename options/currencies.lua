@@ -90,7 +90,11 @@ if IsAddOnLoaded("DataStore_Currencies") then
 			-- display current data
 			local numCurrencies = DataStore:GetNumCurrencies(character)
 			for k = 1, numCurrencies do
+<<<<<<< HEAD
 				local isHeader, name, count, icon = DataStore:GetCurrencyInfo(character, k)
+=======
+				local isHeader, name, count, itemID = DataStore:GetCurrencyInfo(character, k)
+>>>>>>> origin/master
 				
 				entry = FetchEntry(k)
 				if isHeader then
@@ -117,15 +121,27 @@ if IsAddOnLoaded("DataStore_Currencies") then
 					
 					entry.count:SetText(Broker_DS:ShortenNumber(count))
 					
+<<<<<<< HEAD
 					entry.check:SetChecked(BDS_GlobalDB.currencies[character][name] or false)
+=======
+					entry.check:SetChecked(BDS_GlobalDB.currencies[character][itemID] or false)
+>>>>>>> origin/master
 					entry.check:SetScript("OnClick", function(self, button)
 						if not BDS_GlobalDB.currencies[character] then
 							BDS_GlobalDB.currencies[character] = {}
 						end
+<<<<<<< HEAD
 						BDS_GlobalDB.currencies[character][name] = self:GetChecked()
 						Broker_DS.currencies:UpdateLDB()
 					end)
 					
+=======
+						BDS_GlobalDB.currencies[character][itemID] = self:GetChecked()
+						Broker_DS.currencies:UpdateLDB()
+					end)
+					
+					local icon = Broker_DS.currencies:GetMarkIcon(itemID, character)
+>>>>>>> origin/master
 					entry.icon:SetTexture(icon)
 				end
 				entry.label:SetText(name)
@@ -136,10 +152,17 @@ if IsAddOnLoaded("DataStore_Currencies") then
 		DisplayCurrencyData()
 		
 		-- stupid lua order
+<<<<<<< HEAD
 		local function OnClick(self)
 			UIDropDownMenu_SetSelectedValue(characterSelect, self.value)
 			characterSelectText:SetText(Broker_DS:GetColoredCharacterName(self.value))
 			DisplayCurrencyData(self.value)
+=======
+		local function OnClick()
+			UIDropDownMenu_SetSelectedValue(characterSelect, this.value)
+			characterSelectText:SetText(Broker_DS:GetColoredCharacterName(this.value))
+			DisplayCurrencyData(this.value)
+>>>>>>> origin/master
 		end
 		UIDropDownMenu_Initialize(characterSelect, function()
 			local selected, info = UIDropDownMenu_GetSelectedValue(characterSelect), UIDropDownMenu_CreateInfo()

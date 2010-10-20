@@ -1,5 +1,8 @@
 ## Interface: 30300
+<<<<<<< HEAD
 ## X-Compatible-With: 40000
+=======
+>>>>>>> origin/master
 ## Title: Broker_DataStore
 ## Notes: Create LDB plugins for DataStore modules
 ## Notes-deDE: Erstellt LDB Plugins für DataStore Module
