@@ -21,7 +21,6 @@ if IsAddOnLoaded("DataStore_Talents") then
 			level = DataStore:GetCharacterLevel(character) or 1
 			current = DataStore:GetActiveTalents(character) and DataStore:GetActiveTalents(character) or nil
 		end
-<<<<<<< HEAD
 		if not class then return end
 		
 		local availablePoints
@@ -72,83 +71,6 @@ if IsAddOnLoaded("DataStore_Talents") then
 				secondaryName = DataStore:GetTreeNameByID(class, secondary)
 			end
 			secondary = secondaryName or "-"
-=======
-		
-		if level < 10 then
-			return nil, nil, 0, nl
-		end
-		
-		if not class then return end
-		-- scan talents and save raw numbers
-		local i, points = 1, nil
-		talents.primary.total, talents.secondary.total = 0, 0	-- reset data
-		for trees in DataStore:GetClassTrees(class) do
-			points = tonumber(DataStore:GetNumPointsSpent(character, trees, 1) or 0)
-			talents.primary[i] = points
-			talents.primary.total = talents.primary.total + points
-			
-			points = tonumber(DataStore:GetNumPointsSpent(character, trees, 2) or 0)
-			talents.secondary[i] = points
-			talents.secondary.total = talents.secondary.total + points
-			
-			i = i+1
-		end
-		
-		-- calculate which one our main tree is
-		local major_primary, minor_primary = 0, 0
-		local major_secondary, minor_secondary = 0, 0
-		-- primary spec
-		for treeID, pointsSpent in pairs(talents.primary) do
-			if type(treeID) == "number" and 
-				pointsSpent > (talents.primary[major_primary] or 0) then
-				
-				minor_primary = major_primary
-				major_primary = treeID
-			end
-		end
-		tempMajor = talents.primary[major_primary] or 0
-		tempMinor = talents.primary[minor_primary] or 0
-		if abs(tempMajor - tempMinor) < 7 and tempMajor + tempMinor > 0 then
-			major_primary = nil
-		end
-		
-		-- secondary spec
-		for treeID, pointsSpent in pairs(talents.secondary) do
-			if type(treeID) == "number" and 
-				pointsSpent > (talents.secondary[major_secondary] or 0) then
-				
-				minor_secondary = major_secondary
-				major_secondary = treeID
-			end
-		end
-		tempMajor = talents.secondary[major_secondary] or 0
-		tempMinor = talents.secondary[minor_secondary] or 0
-		if abs(tempMajor - tempMinor) < 7 and tempMajor + tempMinor > 0 then
-			major_secondary = nil
-		end
-		
-		-- if class is known, use proper tree name
-		local primary_result, secondary_result
-		local primary_name, secondary_name
-		if class ~= "" and type(class) == "string" then
-			if major_primary == nil then
-				primary_result = "Hybrid"
-			elseif major_primary ~= 0 then
-				primary_name = DataStore:GetTreeNameByID(class, major_primary)
-				primary_result = primary_name
-			else
-				primary_result = "-"
-			end
-			
-			if major_secondary == nil then
-				secondary_result = "Hybrid"
-			elseif major_secondary ~= 0 then
-				secondary_name = DataStore:GetTreeNameByID(class, major_secondary)
-				secondary_result = secondary_name
-			else
-				secondary_result = "-"
-			end
->>>>>>> origin/master
 		else
 			primary_result = talents.primary[1] .. "/" .. talents.primary[2] .. "/" .. talents.primary[3]
 			secondary_result = talents.secondary[1] .. "/" .. talents.secondary[2] .. "/" .. talents.secondary[3]
@@ -156,7 +78,6 @@ if IsAddOnLoaded("DataStore_Talents") then
 		
 		-- return a pretty icon of the currently active talent spec
 		local icon = "Interface\\Icons\\Inv_misc_questionmark"
-<<<<<<< HEAD
 		if current == 1 and primaryName then
 			icon = DataStore:GetTreeInfo(class, primaryName)
 		elseif current == 2 and secondaryName then
@@ -172,23 +93,6 @@ if IsAddOnLoaded("DataStore_Talents") then
 		end
 		
 		return primary, secondary, current, icon
-=======
-		if current == 1 and primary_name then
-			icon = DataStore:GetTreeInfo(class, primary_name)
-		elseif current == 2 and secondary_name then
-			icon = DataStore:GetTreeInfo(class, secondary_name)
-		end
-		
-		-- notify of unspent talent points
-		if talents.primary.total < level - 9 then
-			primary_result = primary_result .. "*"
-		end
-		if talents.secondary.total ~= 0 and talents.secondary.total < level - 9 then
-			secondary_result = secondary_result .. "*"
-		end
-		
-		return primary_result, secondary_result, current, icon
->>>>>>> origin/master
 	end
 	
 	-- Managing the module --------------------------------------------------
@@ -227,15 +131,9 @@ if IsAddOnLoaded("DataStore_Talents") then
 				end
 			end
 			if numChars == 0 then
-<<<<<<< HEAD
 				self:AddLine(Broker_DS.locale.talentsNone)
 			elseif unspent then
 				self:AddLine("* " .. Broker_DS.locale.talentsUnspent)
-=======
-				self:AddLine("No character with talent points (yet).")
-			elseif unspent then
-				self:AddLine("* unspent talent points")
->>>>>>> origin/master
 			end
 		end
 	})
@@ -251,11 +149,7 @@ if IsAddOnLoaded("DataStore_Talents") then
 		end
 		
 		if (current == 1 and string.find(primary, "*")) or (current == 2 and string.find(secondary, "*")) then
-<<<<<<< HEAD
 			LDB.text = Broker_DS.locale.talentsUnspent
-=======
-			LDB.text = "Unspent talent points!"
->>>>>>> origin/master
 		elseif current == 1 then
 			LDB.text = activeColor .. primary .. "|r/" .. inactiveColor .. secondary .. "|r"
 		else

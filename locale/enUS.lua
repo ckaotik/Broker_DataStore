@@ -3,7 +3,6 @@ local _, Broker_DS = ...
 Broker_DS.locale = {
 
 	achievements = "Achievements",
-<<<<<<< HEAD
 	achievementsNone = "Nothing to display here. Right-Click for options!",
 	
 	auctions = "Auctions",
@@ -14,10 +13,4 @@ Broker_DS.locale = {
 	talents = "Talents",
 	talentsNone = "No characters with talent points (yet).",
 	talentsUnspent = "unspent talent points";
-=======
-	auctions = "Auctions",
-	currencies = "Currencies",
-	talents = "Talents",
-	
->>>>>>> origin/master
 }
