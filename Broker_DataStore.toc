@@ -1,0 +1,40 @@
+## Interface: 30300
+## X-Compatible-With: 40000
+## Title: Broker_DataStore
+## Notes: Create LDB plugins for DataStore modules
+## Notes-deDE: Erstellt LDB Plugins für DataStore Module
+## Author: ckaotik
+## Version: 3.3v0
+
+## Dependencies: DataStore, DataStore_Characters
+## OptionalDeps: DataStore_Achievements, DataStore_Auctions, DataStore_Containers, DataStore_Crafts, DataStore_Currencies, DataStore_Inventory, DataStore_Mails, DataStore_Pets, DataStore_Quests, DataStore_Reputations, DataStore_Spells, DataStore_Stats, DataStore_Talents
+## SavedVariables: BDS_GlobalDB
+## SavedVariablesPerCharacter: BDS_LocalDB
+
+## X-Category: Misc
+## X-License: BSD
+
+# libraries
+libs\LibStub.lua
+libs\CallbackHandler-1.0.lua
+libs\LibDataBroker-1.1.lua
+libs\AceTimer-3.0\AceTimer-3.0.xml
+libs\tekKonfig\tekKonfig.xml
+
+# localization files
+locale\enUS.lua
+locale\deDE.lua
+
+# main addon files
+achievements.lua
+auctions.lua
+currencies.lua
+talents.lua
+core.lua
+
+# options
+options\core.lua
+options\achievements.lua
+options\auctions.lua
+options\currencies.lua
+options\talents.lua
