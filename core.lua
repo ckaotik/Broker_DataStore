@@ -1,13 +1,13 @@
 local _, Broker_DS = ...
 
-local function Inizialize()
+local function Initialize()
 	-- initialize saved variables
 	if not BDS_GlobalDB then BDS_GlobalDB = {} end
 	if not BDS_LocalDB then BDS_LocalDB = {} end
 	
 	-- initialize modules
 	local initFunc
-	for _, tab in pairs(Broker_DS.modules) do
+	for _, tab in pairs(Broker_DS.modules or {}) do
 		-- run module's init function
 		initFunc = tab[2]
 		if initFunc then
@@ -19,7 +19,7 @@ end
 
 Broker_DS.frame = CreateFrame("Frame", "Broker_DataStore", UIParent)
 Broker_DS.frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-Broker_DS.frame:SetScript("OnEvent", Inizialize)
+Broker_DS.frame:SetScript("OnEvent", Initialize)
 
 -- -------------------------------------------------------------------------------------------
 -- characters database, sorted, for nice display
