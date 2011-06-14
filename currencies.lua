@@ -22,7 +22,7 @@ if IsAddOnLoaded("DataStore_Currencies") then
 				and BDS_GlobalDB.currencies
 				and BDS_GlobalDB.currencies[character]
 				and BDS_GlobalDB.currencies[character][name] then
-				text = text .. "|T" .. icon .. ":0|t" .. Broker_DS:ShortenNumber(count) .. " "	-- trailing space for concat
+				text = text .. "|T" .. icon .. ":0|t" .. count .. " "	-- trailing space for concat
 			end
 		end
 		return text

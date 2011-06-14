@@ -51,23 +51,18 @@ if IsAddOnLoaded("DataStore_Talents") then
 		end
 		
 		-- calculate which one our main tree is
-		local mainTree = math.max(talents.primary[1] or 0, talents.primary[2] or 0, talents.primary[3] or 0)
-		local primary = (mainTree == 0 and -1) 
-			or (mainTree == talents.primary[1] and 1) or (mainTree == talents.primary[2] and 2) or (mainTree == talents.primary[3] and 3)
-		
-		mainTree = math.max(talents.secondary[1] or 0, talents.secondary[2] or 0, talents.secondary[3] or 0)
-		local secondary = (mainTree == 0 and -1) 
-			or (mainTree == talents.secondary[1] and 1) or (mainTree == talents.secondary[2] and 2) or (mainTree == talents.secondary[3] and 3)
+		local primary = GetPrimaryTalentTree(nil, nil, 1)
+		local secondary = GetPrimaryTalentTree(nil, nil, 2)
 		
 		-- if class is known, use proper tree name
 		local primaryName, secondaryName
 		if class ~= "" and type(class) == "string" then
-			if primary > 0 then
+			if primary and primary > 0 then
 				primaryName = DataStore:GetTreeNameByID(class, primary)
 			end
 			primary = primaryName or "-"
 			
-			if secondary > 0 then
+			if secondary and secondary > 0 then
 				secondaryName = DataStore:GetTreeNameByID(class, secondary)
 			end
 			secondary = secondaryName or "-"
