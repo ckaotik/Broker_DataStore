@@ -90,7 +90,7 @@ if IsAddOnLoaded("DataStore_Currencies") then
 			-- display current data
 			local numCurrencies = DataStore:GetNumCurrencies(character)
 			for k = 1, numCurrencies do
-				local isHeader, name, count, icon = DataStore:GetCurrencyInfo(character, k)
+				local isHeader, name, count, markIcon = DataStore:GetCurrencyInfo(character, k)
 				
 				entry = FetchEntry(k)
 				if isHeader then
@@ -126,7 +126,7 @@ if IsAddOnLoaded("DataStore_Currencies") then
 						Broker_DS.currencies:UpdateLDB()
 					end)
 					
-					entry.icon:SetTexture(icon)
+					entry.icon:SetTexture(markIcon)
 				end
 				entry.label:SetText(name)
 				entry:Show()
@@ -150,7 +150,8 @@ if IsAddOnLoaded("DataStore_Currencies") then
 				info.text = Broker_DS:GetColoredCharacterName(char)
 				info.value = char
 				info.func = OnClick
-				info.checked = char == selected
+				-- info.checked = char == selected
+				info.notCheckable = true -- to fix stupid blizzard bugs
 				UIDropDownMenu_AddButton(info)
 			end
 		end)
