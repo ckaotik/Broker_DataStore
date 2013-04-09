@@ -1,5 +1,5 @@
 ## Interface: 50200
-## Title: Broker_DataStore
+## Title: DSintegrate
 ## Notes: Create LDB plugins for DataStore modules
 ## Notes-deDE: Erstellt LDB Plugins für DataStore Module
 ## Author: ckaotik
@@ -7,7 +7,7 @@
 
 ## Dependencies: DataStore
 ## OptionalDeps: DataStore_Characters, DataStore_Achievements, DataStore_Auctions, DataStore_Containers, DataStore_Crafts, DataStore_Currencies, DataStore_Inventory, DataStore_Mails, DataStore_Pets, DataStore_Quests, DataStore_Reputations, DataStore_Spells, DataStore_Stats, DataStore_Talents
-## SavedVariables: BDS_GlobalDB
+## SavedVariables: BDS_GlobalDB, DataStore_MoreDB
 ## SavedVariablesPerCharacter: BDS_LocalDB
 
 ## X-Category: Misc
@@ -20,6 +20,7 @@ libs\LibDataBroker-1.1.lua
 libs\AceTimer-3.0\AceTimer-3.0.xml
 libs\tekKonfig\tekKonfig.xml
 
+datastore_more.lua
 core.lua
 
 # localization files

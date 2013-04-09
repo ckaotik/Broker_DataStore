@@ -1,6 +1,8 @@
 local addonName, ns, _ = ...
 Broker_DataStore = ns
 
+ns.modules = {}
+
 local initialize -- forward declaration
 local frame, eventHooks = CreateFrame("Frame"), {}
 local function eventHandler(frame, event, arg1, ...)
@@ -68,58 +70,51 @@ end
 local thisCharacter = DataStore:GetCharacter()
 -- local function initialize(frame, event, addon)
 initialize = function()
-	--if addon == addonName then
-		-- initialize saved variables
-		if not BDS_GlobalDB then BDS_GlobalDB = {} end
-		if not BDS_LocalDB then BDS_LocalDB = {} end
+	-- initialize saved variables
+	if not BDS_GlobalDB then BDS_GlobalDB = {} end
+	if not BDS_LocalDB then BDS_LocalDB = {} end
 
-		-- supply some fallbacks
-		if IsAddOnLoaded('DataStore_Characters') then
-			ns.GetColoredCharacterName = function(characterKey)
-				return (DataStore:GetColoredCharacterName(characterKey) or '') .. '|r'
-			end
-			ns.GetFaction = function(characterKey)
-				return DataStore:GetCharacterFaction(characterKey)
-			end
+	-- supply some fallbacks
+	if IsAddOnLoaded('DataStore_Characters') then
+		ns.GetColoredCharacterName = function(characterKey)
+			return (DataStore:GetColoredCharacterName(characterKey) or '') .. '|r'
 		end
-		if IsAddOnLoaded('DataStore_Inventory') then
-			ns.GetAverageItemLevel = function(characterKey)
-				if characterKey == thisCharacter then
-					return GetAverageItemLevel()
-				else
-					return DataStore:GetAverageItemLevel(characterKey)
-				end
+		ns.GetFaction = function(characterKey)
+			return DataStore:GetCharacterFaction(characterKey)
+		end
+	end
+	if IsAddOnLoaded('DataStore_Inventory') then
+		ns.GetAverageItemLevel = function(characterKey)
+			if characterKey == thisCharacter then
+				return GetAverageItemLevel()
+			else
+				return DataStore:GetAverageItemLevel(characterKey)
 			end
 		end
+	end
 
-		-- initialize addon variables
-		ns.characters = {}
-		for characterName, characterKey in pairs(DataStore:GetCharacters()) do
-			coloredName = ''
-			itemLevel = 0
+	-- initialize addon variables
+	ns.characters = {}
+	for characterName, characterKey in pairs(DataStore:GetCharacters()) do
+		table.insert(ns.characters, {
+			name = characterName,
+			key = characterKey,
+			coloredName = ns.GetColoredCharacterName(characterKey),
+			-- itemLevel = ns.GetAverageItemLevel(characterKey),
+		})
+	end
+	table.sort(ns.characters, function(a,b) return a.name < b.name end)
 
-			table.insert(ns.characters, {
-				name = characterName,
-				key = characterKey,
-				coloredName = ns.GetColoredCharacterName(characterKey),
-				itemLevel = ns.GetAverageItemLevel(characterKey),
-			})
+	-- initialize modules
+	local initFunc
+	for _, tab in pairs(ns.modules or {}) do
+		-- run module's init function
+		initFunc = tab[2]
+		if initFunc then
+			initFunc()
 		end
-		table.sort(ns.characters, function(a,b) return a.name < b.name end)
-
-		-- initialize modules
-		local initFunc
-		for _, tab in pairs(ns.modules or {}) do
-			-- run module's init function
-			initFunc = tab[2]
-			if initFunc then
-				initFunc()
-			end
-		end
-		-- ns.UnregisterEvent('ADDON_LOADED', 'init')
-	-- end
+	end
 end
--- ns.RegisterEvent('ADDON_LOADED', initialize, 'init')
 frame:RegisterEvent('ADDON_LOADED')
 
 local function UpdateItemLevel()

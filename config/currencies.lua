@@ -139,7 +139,7 @@ if IsAddOnLoaded("DataStore_Currencies") then
 			local char
 			for i = 1, #Broker_DS.characters do
 				info.value = Broker_DS.characters[i].key
-				info.text  = Broker_DS:GetColoredCharacterName(info.value)
+				info.text  = Broker_DS.GetColoredCharacterName(info.value)
 				info.func  = OnClick
 				info.checked = char == selected
 

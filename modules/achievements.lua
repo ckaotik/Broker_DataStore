@@ -2,18 +2,18 @@ local _, Broker_DS = ...
 
 if IsAddOnLoaded("DataStore_Achievements") then
 	Broker_DS.achievements = {}
-	
+
 	-- Managing the module --------------------------------------------------
 	-- initialize LDB plugin
 	local LDB = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("DataStore_Achievements", {
 		type	= "data source",
 		label	= "Achievements",
 		text 	= Broker_DS.locale.achievements,
-		
+
 		-- OnClick is further below
 		OnTooltipShow = function(self)
 			self:AddDoubleLine("Broker_DataStore", Broker_DS.locale.achievements)
-			
+
 			for i=1, #Broker_DS.characters do
 				-- TODO
 				-- self:AddDoubleLine(Broker_DS:GetColoredCharacterName(char), currencyString)
@@ -23,12 +23,12 @@ if IsAddOnLoaded("DataStore_Achievements") then
 			end
 		end
 	})
-	
+
 	function Broker_DS.achievements:UpdateLDB(displayText)
 		if displayText and displayText ~= "" then
 			LDB.text = displayText
 		else
-			local currenciesString = Broker_DS.currencies:GetCurrencyString()
+			local currenciesString = ''
 			if currenciesString == "" then
 				-- LDB.text = "|TInterface\\Minimap\\Tracking\\None:0|t " .. Broker_DS.locale.currencies
 			else
@@ -44,7 +44,7 @@ if IsAddOnLoaded("DataStore_Achievements") then
 			Broker_DS.achievements:UpdateLDB()
 		end
 	end
-	
+
 	local init = function()
 		-- check saved variables
 		if not BDS_GlobalDB.achievements then
@@ -52,14 +52,14 @@ if IsAddOnLoaded("DataStore_Achievements") then
 		end
 		Broker_DS.achievements:UpdateLDB()
 	end
-	
+
 	-- event frame
 	local frame = CreateFrame("frame")
 	-- frame:RegisterEvent("CHAT_MSG_SYSTEM")
 	frame:SetScript("OnEvent", function(self, event, ...)
 		-- Broker_DS.currencies:UpdateLDB()
 	end)
-	
+
 	-- register module
 	if not Broker_DS.modules then
 		Broker_DS.modules = { {LDB, init} }
