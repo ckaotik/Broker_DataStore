@@ -68,6 +68,7 @@ end
 
 -- Events -------------------------------------------------
 local thisCharacter = DataStore:GetCharacter()
+
 -- local function initialize(frame, event, addon)
 initialize = function()
 	-- initialize saved variables
@@ -82,6 +83,8 @@ initialize = function()
 		ns.GetFaction = function(characterKey)
 			return DataStore:GetCharacterFaction(characterKey)
 		end
+
+		--
 	end
 	if IsAddOnLoaded('DataStore_Inventory') then
 		ns.GetAverageItemLevel = function(characterKey)
@@ -117,7 +120,7 @@ initialize = function()
 end
 frame:RegisterEvent('ADDON_LOADED')
 
-local function UpdateItemLevel()
+--[[ local function UpdateItemLevel()
 	for _, charData in ipairs(ns.characters) do
 		if charData.key == thisCharacter then
 			charData.itemLevel = ns.GetAverageItemLevel(thisCharacter)
@@ -128,3 +131,4 @@ end
 ns.RegisterEvent('PLAYER_AVG_ITEM_LEVEL_READY', UpdateItemLevel, 'updateilvl_initial')
 ns.RegisterEvent('PLAYER_EQUIPMENT_CHANGED', 	UpdateItemLevel, 'updateilvl_equipped')
 ns.RegisterEvent('BAG_UPDATE_DELAYED', 			UpdateItemLevel, 'updateilvl_bags')
+--]]

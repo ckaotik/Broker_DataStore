@@ -24,19 +24,29 @@ local AddonDB_Defaults = {
 	}
 }
 
-local nextMaintenance
+local lastMaintenance, nextMaintenance
+local function GetLastMaintenance()
+	if not lastMaintenance then
+		local region = GetCVar('portal')
+		local maintenanceWeekDay = (region == 'us' and 2) -- tuesday
+								or (region == 'eu' and 3) -- wednesday
+								or (region == 'kr' and 4) -- ?
+								or (region == 'tw' and 4) -- ?
+								or (region == 'cn' and 4) -- ?
+								or 2
+		-- this gives us the time a reset happens, GetQuestResetTime might not be available at launch
+		local dailyReset = time() + GetQuestResetTime()
+		if dailyReset == 0 then return end
+
+		local dailyResetWeekday = tonumber(date('%w', dailyReset))
+		lastMaintenance = dailyReset - ((dailyResetWeekday - maintenanceWeekDay)%7) * 24*60*60
+		if lastMaintenance == dailyReset then lastMaintenance = lastMaintenance - 7*24*60*60 end
+	end
+	return lastMaintenance
+end
 local function GetNextMaintenance()
 	if not nextMaintenance then
-		local region = GetCVar('portal')
-		local maintenanceWeekDay = (region == 'us' and 3)
-			or (region == 'eu' and 4)
-			or (region == 'kr' and 5)
-			or (region == 'tw' and 6)
-			or 7
-		local dailyReset = time() + GetQuestResetTime()
-		local resetWeekday = tonumber(date('%w', dailyReset)) + 1
-		nextMaintenance = dailyReset + ((maintenanceWeekDay - resetWeekday)%7)*24*60*60
-		-- print('next weekly reset', date('%d.%m.%Y', nextMaintenance))
+		nextMaintenance = GetLastMaintenance() + 7*24*60*60
 	end
 	return nextMaintenance
 end
@@ -99,10 +109,14 @@ local function _GetCurrencyCaps(character)
 	return character.WeeklyCurrency
 end
 
-local function _GetCurrencyCapInfo(character, currencyID)
-	local weeklyAmount = character.WeeklyCurrency[currencyID]
-	local currentAmount = nil -- TODO get data from datastore_currencies
+local function _GetCurrencyCapInfo(character, currencyID, characterKey)
+	local weeklyAmount = _GetCurrencyWeeklyAmount(character, currencyID)
 	local name, _, _, _, weeklyMax, totalMax = GetCurrencyInfo(currencyID)
+
+	local currentAmount
+	if IsAddOnLoaded('DataStore_Currencies') then
+		_, _, currentAmount = DataStore:GetCurrencyInfoByName(characterKey, name)
+	end
 
 	if totalMax%100 == 99 then -- valor and justice caps are weird
 		totalMax  = math.floor(totalMax/100)
@@ -113,7 +127,23 @@ local function _GetCurrencyCapInfo(character, currencyID)
 end
 
 local function _GetCurrencyWeeklyAmount(character, currencyID)
-	return character.WeeklyCurrency[currencyID]
+	local lastMaintenance = GetLastMaintenance()
+	if lastMaintenance and character.lastUpdate and character.lastUpdate >= lastMaintenance then
+		return character.WeeklyCurrency[currencyID]
+	else
+		return 0
+	end
+end
+
+local function _IsWeeklyQuestCompletedBy(character, questID, characterKey)
+	if not IsAddOnLoaded('DataStore_Quests') then return end
+	local _, lastUpdate = DataStore:GetQuestHistoryInfo(characterKey)
+	local lastMaintenance = GetLastMaintenance()
+	if not (lastUpdate and lastMaintenance) or lastUpdate < lastMaintenance then
+		return false
+	else
+		return DataStore:IsQuestCompletedBy(characterKey, questID) or false
+	end
 end
 
 -- setup
@@ -123,6 +153,7 @@ local PublicMethods = {
 	GetLFRs = _GetLFRs,
 	GetLFRInfo = _GetLFRInfo,
 	GetCurrencyWeeklyAmount = _GetCurrencyWeeklyAmount,
+	IsWeeklyQuestCompletedBy = _IsWeeklyQuestCompletedBy,
 }
 
 function addon:OnInitialize()
@@ -132,6 +163,9 @@ function addon:OnInitialize()
 	for funcName, funcImpl in pairs(PublicMethods) do
 		DataStore:SetCharacterBasedMethod(funcName)
 	end
+
+	GetLastMaintenance()
+	GetNextMaintenance()
 end
 
 function addon:OnEnable()

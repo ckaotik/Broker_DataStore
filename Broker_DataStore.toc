@@ -28,6 +28,7 @@ locale\enUS.lua
 locale\deDE.lua
 
 # modules
+modules\characters.lua
 modules\achievements.lua
 modules\auctions.lua
 modules\calendar.lua

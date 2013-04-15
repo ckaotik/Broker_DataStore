@@ -1,14 +1,13 @@
 local addonName, ns, _ = ...
 local QTip = LibStub("LibQTip-1.0")
 
--- GLOBALS: _G, DataStore, BDS_GlobalDB, RAID_FINDER, BOSS, CALENDAR_REPEAT_WEEKLY, CURRENCY, GREEN_FONT_COLOR_CODE, GRAY_FONT_COLOR_CODE, RED_FONT_COLOR_CODE, FONT_COLOR_CODE_CLOSE, ITEM_REFUND_MSG
+-- GLOBALS: _G, DataStore, BDS_GlobalDB, RAID_FINDER, BOSS, CALENDAR_REPEAT_WEEKLY, CURRENCY, GREEN_FONT_COLOR_CODE, GRAY_FONT_COLOR_CODE, RED_FONT_COLOR_CODE, FONT_COLOR_CODE_CLOSE, ITEM_REFUND_MSG, BATTLE_PET_SOURCE_7
 -- GLOBALS: IsAddOnLoaded, IsAltKeyDown, GetItemInfo, GetCurrencyInfo, IsQuestFlaggedCompleted, GetLFGDungeonNumEncounters, GetLFGDungeonRewardCapInfo, GetCVar, GetCurrencyListInfo, GetCurrencyListSize, GetQuestResetTime, InterfaceOptionsFrame_OpenToCategory, ToggleCharacter
 -- GLOBALS: tonumber, type, select, wipe, unpack, ipairs, table, string, math, date, time, bit
 
 -- --------------------------------------------------------
 -- character progress
 -- --------------------------------------------------------
-local lastMaintenance
 local fontDummy = ns.events:CreateFontString()
 local thisCharacter = DataStore:GetCharacter()
 
@@ -109,15 +108,10 @@ end
 
 -- -----------------------------------------
 local function GetCharacterQuestState(character, questID)
-	if character ~= thisCharacter and IsAddOnLoaded('DataStore_Quests') then
-		local _, lastUpdate = DataStore:GetQuestHistoryInfo(character)
-		if not (lastUpdate and lastMaintenance) or lastUpdate < lastMaintenance then
-			return false
-		else
-			return DataStore:IsQuestCompletedBy(character, questID) or false
-		end
-	elseif character == thisCharacter then
+	if character == thisCharacter then
 		return IsQuestFlaggedCompleted(questID) and true or false
+	elseif IsAddOnLoaded('DataStore_Quests') then
+		return DataStore:IsWeeklyQuestCompletedBy(character, questID, character) or false
 	else
 		-- no info
 		return false
@@ -242,6 +236,8 @@ local function ShowTooltip(self)
 	local data, lineNum
 
 	tooltip:AddHeader(getColumnHeaders('lfr'))
+	-- tooltip:SetCellScript(headLine, col, "OnEnter", ShowToonTooltip, {toon})
+	-- tooltip:SetCellScript(headLine, col, "OnLeave", function() GameTooltip:Hide() end)
 	for _, charData in ipairs(ns.characters) do
 		data = GetCharacterLFRLockouts(charData.key, true)
 		if data then
@@ -294,7 +290,7 @@ LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('DataStore_CharProgress', 
 
 -- --------------------------------------------------------
 
-local function UpdateWeeklyQuests(frame, event)
+--[[ local function UpdateWeeklyQuests(frame, event)
 	if IsAddOnLoaded('DataStore_Quests') then
 		-- local history = _G['DataStore_Quests'].db.global.Characters[thisCharacter].History
 		local history = _G['DataStore_Quests'].ThisCharacter.History
@@ -314,27 +310,16 @@ local function UpdateWeeklyQuests(frame, event)
 	end
 end
 ns.RegisterEvent('CRITERIA_UPDATE', UpdateWeeklyQuests, 'updatequestsweekly')
-ns.RegisterEvent('PLAYER_LOGIN', DataStore.QueryQuestHistory, 'updatequesthistory')
+-- ns.RegisterEvent('PLAYER_LOGIN', DataStore.QueryQuestHistory, 'updatequesthistory')
 -- ZONE_CHANGED, PLAYER_REGEN_ENABLED, QUEST_FINISHED
+--]]
 
-ns.RegisterEvent('ADDON_LOADED', function(frame, event, arg1)
+--[[ ns.RegisterEvent('ADDON_LOADED', function(frame, event, arg1)
 	if arg1 == addonName then
-		local region = GetCVar('portal')
-		local maintenanceWeekDay = (region == 'us' and 2) -- tuesday
-								or (region == 'eu' and 3) -- wednesday
-								or (region == 'kr' and 4) -- ?
-								or (region == 'tw' and 4) -- ?
-								or (region == 'tw' and 4) -- ?
-								or 2
-		-- this gives us the time a reset happens
-		local dailyReset = time() + GetQuestResetTime()
-		local dailyResetWeekday = tonumber(date('%w', dailyReset))
-		lastMaintenance = dailyReset - ((dailyResetWeekday - maintenanceWeekDay)%7) * 24*60*60
-		if lastMaintenance == dailyReset then lastMaintenance = lastMaintenance - 7*24*60*60 end
-
+		-- init
 		ns.UnregisterEvent('ADDON_LOADED', 'charprogress')
 	end
-end, 'charprogress')
+end, 'charprogress') --]]
 
 -- --------------------------------------------------------
 -- simple currency ldb
@@ -347,31 +332,33 @@ local function GetCurrencyString(character)
 	character = character or thisCharacter
 
 	local text = ''
-	local numCurrenciesKnown = DataStore:GetNumCurrencies(character)
-	for i = 1, numCurrenciesKnown do
-		local isHeader, name, count, icon
+	local isHeader, name, count, icon
+	-- if character == thisCharacter then
+	--	print('LDBUpdate', DataStore:GetNumCurrencies(character), DataStore:GetCurrencyInfo(character, 2))
+	-- end
+	for i = 1, DataStore:GetNumCurrencies(character) do
 		isHeader, name, count, icon = DataStore:GetCurrencyInfo(character, i)
 
 		if not isHeader and count and count > 0
 			and BDS_GlobalDB.currencies[character] and BDS_GlobalDB.currencies[character][name] then
-			text = text .. "|T" .. (icon or "") .. ":0|t" .. (count or 0) .. " "	-- trailing space for concat
+			text = string.format('%s|T%s:0|t%d', (text == '' and '' or text..' '), icon or '', count or 0)
 		end
 	end
 	return text
 end
 
-local function LDBUpdate(displayText)
-	if displayText and displayText ~= '' then
-		currencyLDB.text = displayText
-	else
-		local currenciesString = GetCurrencyString()
-		if currenciesString == '' then
-			currencyLDB.text = "|TInterface\\Minimap\\Tracking\\None:0|t " .. ns.locale.currencies
-		else
-			currencyLDB.text = currenciesString
-		end
+local function GetDisplayString()
+	local currencyString = GetCurrencyString()
+	if currencyString == '' then
+		currencyString = "|TInterface\\Minimap\\Tracking\\None:0|t " .. ns.locale.currencies
 	end
+	return currencyString
 end
+
+local function LDBUpdate(...)
+	currencyLDB.text = GetDisplayString()
+end
+
 local function OnLDBClick(self, button)
 	if button == "RightButton" then
 		InterfaceOptionsFrame_OpenToCategory(ns.options)
@@ -380,15 +367,19 @@ local function OnLDBClick(self, button)
 		LDBUpdate()
 	end
 end
+
 local function OnLDBEnter(self)
 	local tooltip = QTip:Acquire("DataStore_Currencies", 2, "LEFT", "RIGHT")
-	local character, name, count, icon, currency
+	local character, name, count, icon, currency, currencyString
 	tooltip:Clear()
 
 	tooltip:AddHeader(CURRENCY)
 	for i = 1, #ns.characters do
 		character = ns.characters[i].key
-		tooltip:AddLine(ns.GetColoredCharacterName(character), GetCurrencyString(character))
+		currencyString = GetCurrencyString(character)
+		if currencyString ~= '' then
+			tooltip:AddLine(ns.GetColoredCharacterName(character), currencyString)
+		end
 	end
 
 	-- Use smart anchoring code to anchor the tooltip to our frame
