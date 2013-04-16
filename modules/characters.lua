@@ -19,7 +19,8 @@ local function AddAltsToAutoComplete(parent, text, cursorPosition)
 			if charData.key ~= thisCharacter then
 				character = charData.name
 				if string.find(string.lower(character), '^'..string.lower(text)) and not tContains(newResults, character) then
-					table.insert(newResults, ns.GetColoredCharacterName(charData.key))
+					character = ns.GetColoredCharacterName(charData.key)
+					table.insert(newResults, character)
 				end
 			end
 		end
@@ -34,8 +35,8 @@ local function AddAltsToAutoComplete(parent, text, cursorPosition)
 				string.format(parent.autoCompleteFormatRegex or AUTOCOMPLETE_SIMPLE_FORMAT_REGEX, newResults[1],
 				string.match(currentText, parent.autoCompleteRegex or AUTOCOMPLETE_SIMPLE_REGEX)),
 				1)
-				  newText = string.match(newText, '|c........(.+)|r') or newText or ''
-			parent:SetText(newText)
+
+			parent:SetText( string.match(newText, '|c........(.+)|r') or newText or '' )
 			parent:HighlightText(strlen(currentText), strlen(newText))
 			parent:SetCursorPosition(strlen(currentText))
 		end
