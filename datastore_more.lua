@@ -74,6 +74,7 @@ local function UpdateLFRProgress()
 end
 
 local function UpdateWeeklyCap(frame, event, ...)
+	if GetCurrencyListSize() < 1 then return end
 	local currencies = addon.ThisCharacter.WeeklyCurrency
 	wipe(currencies)
 

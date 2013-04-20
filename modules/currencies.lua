@@ -2,7 +2,7 @@ local addonName, ns, _ = ...
 local QTip = LibStub("LibQTip-1.0")
 
 -- GLOBALS: _G, DataStore, BDS_GlobalDB, RAID_FINDER, BOSS, CALENDAR_REPEAT_WEEKLY, CURRENCY, GREEN_FONT_COLOR_CODE, GRAY_FONT_COLOR_CODE, RED_FONT_COLOR_CODE, FONT_COLOR_CODE_CLOSE, ITEM_REFUND_MSG, BATTLE_PET_SOURCE_7
--- GLOBALS: IsAddOnLoaded, IsAltKeyDown, GetItemInfo, GetCurrencyInfo, IsQuestFlaggedCompleted, GetLFGDungeonNumEncounters, GetLFGDungeonRewardCapInfo, GetCVar, GetCurrencyListInfo, GetCurrencyListSize, GetQuestResetTime, InterfaceOptionsFrame_OpenToCategory, ToggleCharacter
+-- GLOBALS: IsAddOnLoaded, IsAltKeyDown, GetItemInfo, GetCurrencyInfo, IsQuestFlaggedCompleted, GetLFGDungeonNumEncounters, GetLFGDungeonRewardCapInfo, InterfaceOptionsFrame_OpenToCategory, ToggleCharacter
 -- GLOBALS: tonumber, type, select, wipe, unpack, ipairs, table, string, math, date, time, bit
 
 -- --------------------------------------------------------
@@ -120,7 +120,12 @@ end
 local function GetCharacterLockoutState(character, dungeonID)
 	local numEncounters, numDefeated = GetLFGDungeonNumEncounters(dungeonID)
 
-	if character ~= thisCharacter then
+	if character == thisCharacter then
+		local _, _, cleared, available = GetLFGDungeonRewardCapInfo(dungeonID)
+
+		numEncounters = cleared == 1 and numDefeated or (available * numEncounters)
+		return numDefeated, numEncounters
+	else
 		local resetIn, lastCheck, available, numDefeated, cleared = DataStore:GetLFRInfo(character, dungeonID)
 
 		available = available and available == 1 and 1 or 0
@@ -130,12 +135,6 @@ local function GetCharacterLockoutState(character, dungeonID)
 			numDefeated = 0
 		end
 		return numDefeated or 0, numEncounters
-
-	elseif character == thisCharacter then
-		local _, _, cleared, available = GetLFGDungeonRewardCapInfo(dungeonID)
-
-		numEncounters = cleared == 1 and numDefeated or (available * numEncounters)
-		return numDefeated, numEncounters
 	end
 
 	return 0, 0
@@ -171,7 +170,8 @@ local function GetCharacterLFRLockouts(character, hideEmpty)
 		for _, dungeonID in ipairs(LFRCategory) do
 			numDefeated, numEncounters = GetCharacterLockoutState(character, dungeonID)
 			categoryData = (categoryData ~= '' and categoryData..' ' or '') .. colorize(numDefeated, 0, numEncounters)
-			showLine = showLine or numDefeated > 0 or nil
+			-- show line if any bosses are down or we may visit this LFR wing
+			showLine = showLine or numDefeated > 0 or numEncounters > 0 or nil
 		end
 		lockoutReturns.lfr[index] = categoryData
 	end
@@ -278,7 +278,7 @@ local function ShowTooltip(self)
 	tooltip:Show()
 end
 
-LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('DataStore_CharProgress', {
+local progressLDB = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('DataStore_CharProgress', {
 	type	= 'data source',
 	label	= string.format('%s: %s', addonName, 'Progress'),
 	text 	= 'Character Progress',
@@ -288,9 +288,27 @@ LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('DataStore_CharProgress', 
 	OnLeave = function() end,	-- needed for e.g. NinjaPanel
 })
 
+local displayCurrency, displayAmount = 396, nil
+ns.RegisterEvent('CURRENCY_DISPLAY_UPDATE', function()
+	if GetCurrencyListSize() < 1 then return end
+	local displayData
+	local currencyName, _, currencyIcon = GetCurrencyInfo(displayCurrency)
+	if displayAmount and IsAddOnLoaded('DataStore_Currencies') then
+		_, _, displayData = DataStore:GetCurrencyInfoByName(thisCharacter, currencyName)
+	else
+		displayData = DataStore:GetCurrencyWeeklyAmount(thisCharacter, displayCurrency)
+	end
+
+	if displayData and displayData > 0 then
+		progressLDB.text = '|T'..currencyIcon..':0|t' .. displayData
+	else
+		progressLDB.text = 'Character Progress'
+	end
+end, 'currencyweekly')
+
 -- --------------------------------------------------------
 
---[[ local function UpdateWeeklyQuests(frame, event)
+--[[local function UpdateWeeklyQuests(frame, event)
 	if IsAddOnLoaded('DataStore_Quests') then
 		-- local history = _G['DataStore_Quests'].db.global.Characters[thisCharacter].History
 		local history = _G['DataStore_Quests'].ThisCharacter.History
@@ -309,7 +327,8 @@ LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('DataStore_CharProgress', 
 		_G['DataStore_Quests'].ThisCharacter.lastUpdate = time()
 	end
 end
-ns.RegisterEvent('CRITERIA_UPDATE', UpdateWeeklyQuests, 'updatequestsweekly')
+ns.RegisterEvent('CRITERIA_UPDATE', UpdateWeeklyQuests, 'updatequestsongoing') --]]
+ns.RegisterEvent('PLAYER_LOGOUT', DataStore.QueryQuestHistory, 'updatequests')
 -- ns.RegisterEvent('PLAYER_LOGIN', DataStore.QueryQuestHistory, 'updatequesthistory')
 -- ZONE_CHANGED, PLAYER_REGEN_ENABLED, QUEST_FINISHED
 --]]
