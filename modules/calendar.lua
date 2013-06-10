@@ -126,7 +126,7 @@ local function UpdateDayEvents(index, day, monthOffset, selectedEventIndex, cont
 	end
 
 	local eventIndex, eventButtonIndex = 1, 1
-	local eventButton, eventButtonName, event, prevEventButton
+	local eventButton, eventButtonName, event, prevEventButton, firstEventButton
 	local eventButtonText1, eventButtonText2
 	while eventButtonIndex <= CALENDAR_DAYBUTTON_MAX_VISIBLE_EVENTS and eventIndex <= numEvents + numAdditionalEvents do
 		eventButtonName = dayButtonName..'EventButton'..eventButtonIndex
@@ -160,6 +160,8 @@ local function UpdateDayEvents(index, day, monthOffset, selectedEventIndex, cont
 		if prevEventButton then
 			-- anchor the prev event button to this one...this makes the latest event stay at the bottom
 			prevEventButton:SetPoint("BOTTOMLEFT", eventButton, "TOPLEFT", 0, -CALENDAR_DAYEVENTBUTTON_YOFFSET)
+		else
+			firstEventButton = eventButton
 		end
 		prevEventButton = eventButton
 
@@ -201,7 +203,19 @@ local function UpdateDayEvents(index, day, monthOffset, selectedEventIndex, cont
 		eventButton:Hide()
 		eventButtonIndex = eventButtonIndex + 1
 	end
-	-- CalendarFrame_UpdateDayTextures(dayButton, numEvents, firstEventButton, firstHolidayIndex)
+
+	if numEvents == 0 then
+		-- black shadow so it's easier to read
+		local eventBackground = _G[dayButtonName.."EventBackgroundTexture"]
+			  eventBackground:SetPoint("TOP", firstEventButton, "TOP", 0, 40);
+			  eventBackground:SetPoint("BOTTOM", dayButton, "BOTTOM")
+			  eventBackground:Show()
+
+		--[[local eventTex = _G[dayButtonName.."EventTexture"]
+		eventTex:SetTexture("Interface\\Calendar\\UI-Calendar-Event-Other")
+		eventTex:SetTexCoord(0,1,0,1)
+		eventTex:Show()--]]
+	end
 end
 
 

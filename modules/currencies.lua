@@ -15,6 +15,13 @@ local worldBosses 	= { 32099, 32098, 32518, 32519 }
 local LFRDungeons 	= { {527, 528}, {529, 530}, {526}, {610, 611, 612, 613} }
 local weeklyQuests 	= { 32610, 32626, 32609, 32505, '32640|32641', '32719|32718' }
 local currencies 	= { 396, 395, 738, 697, 752 } -- valor, justice, lesser/elder/mogu charm
+--[[
+CONQUEST_CURRENCY = 390;
+HONOR_CURRENCY = 392;
+JUSTICE_CURRENCY = 395;
+VALOR_CURRENCY = 396;
+SHOW_CONQUEST_LEVEL = 70;
+--]]
 
 local function tex(item, text)
 	local icon = select(10, GetItemInfo(item))
