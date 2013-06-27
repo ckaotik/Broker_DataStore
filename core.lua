@@ -83,8 +83,6 @@ initialize = function()
 		ns.GetFaction = function(characterKey)
 			return DataStore:GetCharacterFaction(characterKey)
 		end
-
-		--
 	end
 	if IsAddOnLoaded('DataStore_Inventory') then
 		ns.GetAverageItemLevel = function(characterKey)

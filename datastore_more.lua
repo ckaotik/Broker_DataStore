@@ -10,6 +10,7 @@ local addonName  = "DataStore_More"
    _G[addonName] = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0")
 
 local addon = _G[addonName]
+local thisCharacter = DataStore:GetCharacter()
 
 -- these subtables need unique identifier
 local AddonDB_Defaults = {
@@ -27,7 +28,7 @@ local AddonDB_Defaults = {
 local lastMaintenance, nextMaintenance
 local function GetLastMaintenance()
 	if not lastMaintenance then
-		local region = GetCVar('portal')
+		local region = string.lower( GetCVar('portal') or '' )
 		local maintenanceWeekDay = (region == 'us' and 2) -- tuesday
 								or (region == 'eu' and 3) -- wednesday
 								or (region == 'kr' and 4) -- ?
@@ -42,11 +43,11 @@ local function GetLastMaintenance()
 		lastMaintenance = dailyReset - ((dailyResetWeekday - maintenanceWeekDay)%7) * 24*60*60
 		if lastMaintenance == dailyReset then lastMaintenance = lastMaintenance - 7*24*60*60 end
 	end
-	return lastMaintenance
+	return lastMaintenance or 0
 end
 local function GetNextMaintenance()
 	if not nextMaintenance then
-		nextMaintenance = GetLastMaintenance() + 7*24*60*60
+		nextMaintenance = (GetLastMaintenance() or 0) + 7*24*60*60
 	end
 	return nextMaintenance
 end
@@ -73,7 +74,7 @@ local function UpdateLFRProgress()
 	-- addon.ThisCharacter.lastUpdate = time()
 end
 
-local function UpdateWeeklyCap(frame, event, ...)
+local function UpdateWeeklyCap()
 	if GetCurrencyListSize() < 1 then return end
 	local currencies = addon.ThisCharacter.WeeklyCurrency
 	wipe(currencies)
@@ -129,6 +130,10 @@ end
 
 local function _GetCurrencyWeeklyAmount(character, currencyID)
 	local lastMaintenance = GetLastMaintenance()
+	if character == thisCharacter then
+		-- always hand out live data as we might react to CURRENCY_DISPLAY_UPDATE later than our requestee
+		UpdateWeeklyCap()
+	end
 	if lastMaintenance and character.lastUpdate and character.lastUpdate >= lastMaintenance then
 		return character.WeeklyCurrency[currencyID]
 	else
