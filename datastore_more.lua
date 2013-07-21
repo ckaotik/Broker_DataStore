@@ -1,7 +1,7 @@
 local _, ns = ...
 
 -- GLOBALS: LibStub, DataStore
--- GLOBALS: UnitLevel, GetRFDungeonInfo, GetNumRFDungeons, GetLFGDungeonRewardCapInfo, GetLFGDungeonNumEncounters, GetCurrencyListSize, GetCurrencyListInfo, GetCVar, GetQuestResetTime, GetCurrencyInfo, GetCurrencyListLink
+-- GLOBALS: IsAddOnLoaded, UnitLevel, GetRFDungeonInfo, GetNumRFDungeons, GetLFGDungeonRewardCapInfo, GetLFGDungeonNumEncounters, GetCurrencyListSize, GetCurrencyListInfo, GetCVar, GetQuestResetTime, GetCurrencyInfo, GetCurrencyListLink
 -- GLOBALS: wipe, pairs, time, date, string, tonumber, math
 
 if not DataStore then return end
@@ -30,12 +30,12 @@ local function GetLastMaintenance()
 	if not lastMaintenance then
 		local region = string.lower( GetCVar('portal') or '' )
 		local maintenanceWeekDay = (region == 'us' and 2) -- tuesday
-								or (region == 'eu' and 3) -- wednesday
-								or (region == 'kr' and 4) -- ?
-								or (region == 'tw' and 4) -- ?
-								or (region == 'cn' and 4) -- ?
-								or 2
-		-- this gives us the time a reset happens, GetQuestResetTime might not be available at launch
+			or (region == 'eu' and 3) -- wednesday
+			or (region == 'kr' and 4) -- ?
+			or (region == 'tw' and 4) -- ?
+			or (region == 'cn' and 4) -- ?
+			or 2
+		-- this gives us the time a reset happens, though GetQuestResetTime might not be available at launch
 		local dailyReset = time() + GetQuestResetTime()
 		if dailyReset == 0 then return end
 
@@ -43,11 +43,11 @@ local function GetLastMaintenance()
 		lastMaintenance = dailyReset - ((dailyResetWeekday - maintenanceWeekDay)%7) * 24*60*60
 		if lastMaintenance == dailyReset then lastMaintenance = lastMaintenance - 7*24*60*60 end
 	end
-	return lastMaintenance or 0
+	return lastMaintenance
 end
 local function GetNextMaintenance()
-	if not nextMaintenance then
-		nextMaintenance = (GetLastMaintenance() or 0) + 7*24*60*60
+	if not nextMaintenance and lastMaintenance then
+		nextMaintenance = lastMaintenance + 7*24*60*60
 	end
 	return nextMaintenance
 end
@@ -111,6 +111,19 @@ local function _GetCurrencyCaps(character)
 	return character.WeeklyCurrency
 end
 
+local function _GetCurrencyWeeklyAmount(character, currencyID)
+	local lastMaintenance = GetLastMaintenance()
+	if character == thisCharacter then
+		-- always hand out live data as we might react to CURRENCY_DISPLAY_UPDATE later than our requestee
+		UpdateWeeklyCap()
+	end
+	if lastMaintenance and character.lastUpdate and character.lastUpdate >= lastMaintenance then
+		return character.WeeklyCurrency[currencyID]
+	else
+		return 0
+	end
+end
+
 local function _GetCurrencyCapInfo(character, currencyID, characterKey)
 	local weeklyAmount = _GetCurrencyWeeklyAmount(character, currencyID)
 	local name, _, _, _, weeklyMax, totalMax = GetCurrencyInfo(currencyID)
@@ -126,19 +139,6 @@ local function _GetCurrencyCapInfo(character, currencyID, characterKey)
 	end
 
 	return currentAmount, totalMax, weeklyAmount, weeklyMax
-end
-
-local function _GetCurrencyWeeklyAmount(character, currencyID)
-	local lastMaintenance = GetLastMaintenance()
-	if character == thisCharacter then
-		-- always hand out live data as we might react to CURRENCY_DISPLAY_UPDATE later than our requestee
-		UpdateWeeklyCap()
-	end
-	if lastMaintenance and character.lastUpdate and character.lastUpdate >= lastMaintenance then
-		return character.WeeklyCurrency[currencyID]
-	else
-		return 0
-	end
 end
 
 local function _IsWeeklyQuestCompletedBy(character, questID, characterKey)
@@ -169,19 +169,21 @@ function addon:OnInitialize()
 	for funcName, funcImpl in pairs(PublicMethods) do
 		DataStore:SetCharacterBasedMethod(funcName)
 	end
-
-	GetLastMaintenance()
-	GetNextMaintenance()
 end
 
 function addon:OnEnable()
 	addon:RegisterEvent("CURRENCY_DISPLAY_UPDATE", UpdateWeeklyCap)
-	addon:RegisterEvent("PLAYER_LOGIN", UpdateWeeklyCap)
 	addon:RegisterEvent("LFG_LOCK_INFO_RECEIVED", UpdateLFRProgress)
+	addon:RegisterEvent("QUEST_LOG_UPDATE", function()
+		if GetNextMaintenance() then
+			UpdateWeeklyCap()
+			addon:UnregisterEvent("QUEST_LOG_UPDATE")
+		end
+	end)
 end
 
 function addon:OnDisable()
 	addon:UnregisterEvent("CURRENCY_DISPLAY_UPDATE")
-	addon:UnregisterEvent("PLAYER_LOGIN", UpdateWeeklyCap)
 	addon:UnregisterEvent("LFG_LOCK_INFO_RECEIVED")
+	addon:UnregisterEvent("QUEST_LOG_UPDATE")
 end

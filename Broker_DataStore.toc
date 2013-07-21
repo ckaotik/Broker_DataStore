@@ -21,8 +21,8 @@ libs\LibQTip-1.0\LibQTip-1.0.lua
 libs\AceTimer-3.0\AceTimer-3.0.xml
 libs\tekKonfig\tekKonfig.xml
 
-datastore_more.lua
 core.lua
+datastore_more.lua
 
 # localization files
 locale\enUS.lua
