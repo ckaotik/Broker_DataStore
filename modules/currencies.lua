@@ -133,15 +133,14 @@ local function GetCharacterLockoutState(character, dungeonID)
 		numEncounters = cleared == 1 and numDefeated or (available * numEncounters)
 		return numDefeated, numEncounters
 	else
-		local resetIn, lastCheck, available, numDefeated, cleared = DataStore:GetLFRInfo(character, dungeonID)
-
-		available = available and available == 1 and 1 or 0
-		numEncounters = cleared and numDefeated or (available * numEncounters)
-		if resetIn and resetIn - (time() - lastCheck) < 0 then
-			-- we're saved for this dungeon and it's expired
-			numDefeated = 0
+		local status, reset, numDefeated = DataStore:GetLFGInfo(character, dungeonID)
+		if status == true then
+			return numDefeated, numDefeated
+		elseif status == false then
+			return numDefeated, numEncounters
+		else
+			return 0, 0
 		end
-		return numDefeated or 0, numEncounters
 	end
 
 	return 0, 0

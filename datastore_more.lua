@@ -18,7 +18,7 @@ local AddonDB_Defaults = {
 		Characters = {
 			['*'] = {				-- ["Account.Realm.Name"]
 				lastUpdate = nil,
-				LFRs = {},
+				LFGs = {},
 				WeeklyCurrency = {},
 			}
 		}
@@ -53,25 +53,45 @@ local function GetNextMaintenance()
 end
 
 -- *** Scanning functions ***
-local function UpdateLFRProgress()
-	local lfrs = addon.ThisCharacter.LFRs
-	wipe(lfrs)
+local LFGInfos = {
+	-- GetNumX(), GetXInfo(index) returning same data as GetLFGDungeonInfo(dungeonID)
+	GetNumRandomDungeons, GetLFGRandomDungeonInfo,
+	GetNumRFDungeons, GetRFDungeonInfo,
+	GetNumRandomScenarios, GetRandomScenarioInfo,
+}
+-- TYPEID_DUNGEON, TYPEID_RANDOM_DUNGEON
+-- LFG_SUBTYPEID_DUNGEON, LFG_SUBTYPEID_HEROIC, LFG_SUBTYPEID_RAID, LFG_SUBTYPEID_SCENARIO
 
+local function UpdateLFGStatus()
 	local playerLevel = UnitLevel("player")
-	local dungeonID, minLevel, maxLevel, cleared, available, numDefeated, dungeonReset
-	for i=1, GetNumRFDungeons() do
-		dungeonID, _, _, _, minLevel, maxLevel = GetRFDungeonInfo(i)
 
-		_, numDefeated = GetLFGDungeonNumEncounters(dungeonID)
-		_, _, cleared, available = GetLFGDungeonRewardCapInfo(dungeonID)
-		if playerLevel < minLevel or playerLevel > maxLevel then
-			available = -1
+	local lfgs = addon.ThisCharacter.LFGs
+	wipe(lfgs)
+	for i = 1, #LFGInfos, 2 do
+		local getNum, getInfo = LFGInfos[i], LFGInfos[i+1]
+		for index = 1, getNum() do
+			local dungeonID, _, _, _, minLevel, maxLevel, _, _, _, expansionLevel = getInfo(index)
+			local _, _, completed, available, _, _, _, _, _, _, isWeekly = GetLFGDungeonRewardCapInfo(dungeonID)
+			local _, numDefeated = GetLFGDungeonNumEncounters(dungeonID)
+			local doneToday = GetLFGDungeonRewards(dungeonID)
+
+			local status = completed
+			if available ~= 1 or EXPANSION_LEVEL < expansionLevel or playerLevel < minLevel or playerLevel > maxLevel then
+				-- not available
+				local _, reason, info1, info2 = GetLFDLockInfo(dungeonID, 1)
+				status = string.format("%s:%s:%s", reason or '', info1 or '', info2 or '')
+			end
+
+			local dungeonReset = 0
+			if numDefeated > 0 or doneToday then
+				dungeonReset = isWeekly and GetNextMaintenance() or (time() + GetQuestResetTime())
+			end
+
+			lfgs[dungeonID] = string.format("%s|%d|%d", status, dungeonReset, numDefeated)
 		end
-
-		dungeonReset = (numDefeated > 0) and GetNextMaintenance() - time() or 0
-		lfrs[dungeonID] = string.format("%d|%d|%d|%d|%d", dungeonReset, time(), available, numDefeated, cleared)
 	end
-	-- addon.ThisCharacter.lastUpdate = time()
+
+	addon.ThisCharacter.lastUpdate = time()
 end
 
 local function UpdateWeeklyCap()
@@ -79,12 +99,11 @@ local function UpdateWeeklyCap()
 	local currencies = addon.ThisCharacter.WeeklyCurrency
 	wipe(currencies)
 
-	local currencyID, currencyLink, weeklyAmount, currentAmount, totalMax, weeklyMax
 	for i = 1, GetCurrencyListSize() do
-		currencyLink = GetCurrencyListLink(i)
+		local currencyLink = GetCurrencyListLink(i)
 		if currencyLink then
-			currencyID = tonumber(string.match(currencyLink, "currency:(%d+)"))
-			_, currentAmount, _, weeklyAmount, weeklyMax, totalMax = GetCurrencyInfo(currencyID)
+			local currencyID = tonumber(string.match(currencyLink, "currency:(%d+)"))
+			local _, currentAmount, _, weeklyAmount, weeklyMax, totalMax = GetCurrencyInfo(currencyID)
 			if weeklyMax and weeklyMax > 0 then
 				currencies[currencyID] = weeklyAmount
 			end
@@ -94,18 +113,26 @@ local function UpdateWeeklyCap()
 end
 
 -- Mixins
-local function _GetLFRs(character)
-	return character.LFRs
+local function _GetLFGs(character)
+	return character.LFGs
 end
 
-local function _GetLFRInfo(character, dungeonID)
-	local instanceInfo = character.LFRs[dungeonID]
+local function _GetLFGInfo(character, dungeonID)
+	local instanceInfo = character.LFGs[dungeonID]
 	if not instanceInfo then return end
 
-	local reset, lastCheck, available, numDefeated, cleared = string.split("|", instanceInfo)
+	local status, reset, numDefeated = string.split("|", instanceInfo)
+	status = tonumber(status) or status
+	if type(status) == "string" then
+		local playerName, lockedReason, subReason1, subReason2 = strsplit(":", status)
+		status = string.format(_G["INSTANCE_UNAVAILABLE_SELF_"..(LFG_INSTANCE_INVALID_CODES[lockedReason] or "OTHER")], playerName, subReason1, subReason2)
+	else
+		status = status == 1 and true or false
+	end
 
-	return tonumber(reset), tonumber(lastCheck), tonumber(available), tonumber(numDefeated), (cleared == "1") and true or nil
+	return status, tonumber(reset), tonumber(numDefeated)
 end
+
 
 local function _GetCurrencyCaps(character)
 	return character.WeeklyCurrency
@@ -156,8 +183,8 @@ end
 local PublicMethods = {
 	GetCurrencyCaps = _GetCurrencyCaps,
 	GetCurrencyCapInfo = _GetCurrencyCapInfo,
-	GetLFRs = _GetLFRs,
-	GetLFRInfo = _GetLFRInfo,
+	GetLFGs = _GetLFGs,
+	GetLFGInfo = _GetLFGInfo,
 	GetCurrencyWeeklyAmount = _GetCurrencyWeeklyAmount,
 	IsWeeklyQuestCompletedBy = _IsWeeklyQuestCompletedBy,
 }
@@ -173,13 +200,24 @@ end
 
 function addon:OnEnable()
 	addon:RegisterEvent("CURRENCY_DISPLAY_UPDATE", UpdateWeeklyCap)
-	addon:RegisterEvent("LFG_LOCK_INFO_RECEIVED", UpdateLFRProgress)
+	addon:RegisterEvent("LFG_LOCK_INFO_RECEIVED", UpdateLFGStatus)
 	addon:RegisterEvent("QUEST_LOG_UPDATE", function()
 		if GetNextMaintenance() then
 			UpdateWeeklyCap()
 			addon:UnregisterEvent("QUEST_LOG_UPDATE")
 		end
 	end)
+
+	-- clear expired
+	local now = time()
+	for characterKey, character in pairs(addon.Characters) do
+		for dungeonID, data in pairs(character.LFGs) do
+			local status, reset, numDefeated = strsplit("|", data)
+			if tonumber(reset) < now then
+				character.LFGs[dungeonID] = string.format("%s|%d|%d", status, 0, numDefeated)
+			end
+		end
+	end
 end
 
 function addon:OnDisable()
