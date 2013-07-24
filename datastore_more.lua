@@ -113,10 +113,6 @@ local function UpdateWeeklyCap()
 end
 
 -- Mixins
-local function _GetLFGs(character)
-	return character.LFGs
-end
-
 local function _GetLFGInfo(character, dungeonID)
 	local instanceInfo = character.LFGs[dungeonID]
 	if not instanceInfo then return end
@@ -133,6 +129,15 @@ local function _GetLFGInfo(character, dungeonID)
 	return status, tonumber(reset), tonumber(numDefeated)
 end
 
+local function _GetLFGs(character)
+	local lastKey = nil
+	return function()
+		local dungeonID, info = next(character.LFGs, lastKey)
+		lastKey = dungeonID
+
+		return dungeonID, _GetLFGInfo(character, dungeonID)
+	end
+end
 
 local function _GetCurrencyCaps(character)
 	return character.WeeklyCurrency
@@ -213,8 +218,10 @@ function addon:OnEnable()
 	for characterKey, character in pairs(addon.Characters) do
 		for dungeonID, data in pairs(character.LFGs) do
 			local status, reset, numDefeated = strsplit("|", data)
-			if tonumber(reset) < now then
-				character.LFGs[dungeonID] = string.format("%s|%d|%d", status, 0, numDefeated)
+			reset = tonumber(reset)
+			if reset ~= 0 and reset < now and tonumber(status) then
+				-- had lockout, lockout expired, LFG is available
+				character.LFGs[dungeonID] = string.format("%s|%d|%d", 0, 0, 0)
 			end
 		end
 	end
