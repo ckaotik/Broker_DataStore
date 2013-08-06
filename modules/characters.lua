@@ -18,9 +18,22 @@ local function AddAltsToAutoComplete(parent, text, cursorPosition)
 		for _, charData in pairs(ns.characters) do
 			if charData.key ~= thisCharacter then
 				character = charData.name
-				if string.find(string.lower(character), '^'..string.lower(text)) and not tContains(newResults, character) then
+				if string.find(string.lower(character), '^'..string.lower(text)) then
+					local index
+					for i, entry in pairs(newResults) do
+						if entry == character then
+							index = i
+							break
+						end
+					end
+
 					character = ns.GetColoredCharacterName(charData.key)
-					table.insert(newResults, character)
+					if index then
+						-- sometimes alts are on our flist/guild, color them nicely, too!
+						newResults[index] = character
+					else
+						table.insert(newResults, character)
+					end
 				end
 			end
 		end

@@ -184,6 +184,34 @@ local function _IsWeeklyQuestCompletedBy(character, questID, characterKey)
 	end
 end
 
+--[[
+local scanTooltip = CreateFrame("GameTooltip", "DataStoreScanTooltip", nil, "GameTooltipTemplate")
+local glyphNameByID = setmetatable({}, {
+	__index = function(self, id)
+		scanTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+		scanTooltip:SetHyperlink("glyph:"..id)
+		local name = _G[scanTooltip:GetName().."TextLeft1"]:GetText()
+		scanTooltip:Hide()
+		if name then
+			self[id] = name
+			return name
+		end
+	end
+})
+local function _IsGlyphKnown(character, itemID)
+	-- returns true/nil: isKnown, canLearn
+	local glyphName = GetItemInfo(itemID)
+	for index, glyph in ipairs(character.GlyphList) do
+		local id = RightShift(glyph, 4)
+
+		if glyphNameByID[id] == glyphName then
+			local isKnown = bAnd(RightShift(glyph, 3), 1)
+			return (isKnown == 1) and true or nil, true
+		end
+	end
+end
+--]]
+
 -- setup
 local PublicMethods = {
 	GetCurrencyCaps = _GetCurrencyCaps,
