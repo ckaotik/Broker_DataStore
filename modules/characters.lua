@@ -7,11 +7,15 @@ local addonName, ns, _ = ...
 -- ================================================
 -- Autocomplete character names
 -- ================================================
+local function SortNames(a, b)
+	local nameA = a:match("\124c........(.-)\124r") or a
+	local nameB = b:match("\124c........(.-)\124r") or b
+	return nameA < nameB
+end
 local thisCharacter, lastQuery = DataStore:GetCharacter(), nil
 local function AddAltsToAutoComplete(parent, text, cursorPosition)
 	if parent == SendMailNameEditBox and cursorPosition <= strlen(text) then
 		-- possible flags can be found here: http://wow.go-hero.net/framexml/16650/AutoComplete.lua
-		-- /spew GetAutoCompleteResults('t', AUTOCOMPLETE_FLAG_ALL, AUTOCOMPLETE_FLAG_NONE, AUTOCOMPLETE_MAX_BUTTONS+1, 0)
 		local include, exclude = parent.autoCompleteParams.include, parent.autoCompleteParams.exclude
 		local newResults = { GetAutoCompleteResults(text, include, exclude, AUTOCOMPLETE_MAX_BUTTONS+1, cursorPosition) }
 		local character
@@ -37,7 +41,7 @@ local function AddAltsToAutoComplete(parent, text, cursorPosition)
 				end
 			end
 		end
-		table.sort(newResults)
+		table.sort(newResults, SortNames)
 		AutoComplete_UpdateResults(AutoCompleteBox, unpack(newResults))
 
 		-- also write out the first match
