@@ -7,9 +7,14 @@ local addonName, ns, _ = ...
 -- ================================================
 -- Autocomplete character names
 -- ================================================
+local function GetCleanName(text)
+	if not text then return '' end
+	text = text:match("\124c%x%x%x%x%x%x%x%x(.-)\124r") or text
+	return text
+end
 local function SortNames(a, b)
-	local nameA = a:match("\124c........(.-)\124r") or a
-	local nameB = b:match("\124c........(.-)\124r") or b
+	local nameA = GetCleanName(a)
+	local nameB = GetCleanName(b)
 	return nameA < nameB
 end
 local thisCharacter, lastQuery = DataStore:GetCharacter(), nil
@@ -53,7 +58,7 @@ local function AddAltsToAutoComplete(parent, text, cursorPosition)
 				string.match(currentText, parent.autoCompleteRegex or AUTOCOMPLETE_SIMPLE_REGEX)),
 				1)
 
-			parent:SetText( string.match(newText, '|c........(.+)|r') or newText or '' )
+			parent:SetText( GetCleanName(newText) )
 			parent:HighlightText(strlen(currentText), strlen(newText))
 			parent:SetCursorPosition(strlen(currentText))
 		end
@@ -63,7 +68,7 @@ end
 local function CleanAutoCompleteOutput(self)
 	local editBox = self:GetParent().parent
 	if not editBox.addSpaceToAutoComplete then
-		local newText = string.match(editBox:GetText(), '|c........(.+)|r') or editBox:GetText() or ''
+		local newText = GetCleanName( editBox:GetText() )
 		editBox:SetText(newText)
 		editBox:SetCursorPosition(strlen(newText))
 	end
