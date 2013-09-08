@@ -1,5 +1,5 @@
 ## Interface: 50200
-## Title: DSintegrate
+## Title: Broker_DataStore
 ## Notes: Create LDB plugins for DataStore modules
 ## Notes-deDE: Erstellt LDB Plugins für DataStore Module
 ## Author: ckaotik
@@ -29,7 +29,7 @@ locale\enUS.lua
 locale\deDE.lua
 
 # modules
-modules\characters.lua
+# modules\characters.lua
 modules\achievements.lua
 modules\auctions.lua
 modules\calendar.lua
