@@ -6,7 +6,7 @@
 ## Version: 5.2v0
 
 ## Dependencies: DataStore
-## OptionalDeps: DataStore_Characters, DataStore_Achievements, DataStore_Auctions, DataStore_Containers, DataStore_Crafts, DataStore_Currencies, DataStore_Inventory, DataStore_Mails, DataStore_Pets, DataStore_Quests, DataStore_Reputations, DataStore_Spells, DataStore_Stats, DataStore_Talents
+## OptionalDeps: DataStore_Characters, DataStore_Achievements, DataStore_Auctions, DataStore_Containers, DataStore_Crafts, DataStore_Currencies, DataStore_Inventory, DataStore_Mails, DataStore_Pets, DataStore_Quests, DataStore_Reputations, DataStore_Spells, DataStore_Stats, DataStore_Talents, DataMore
 ## SavedVariables: BDS_GlobalDB, DataStore_MoreDB
 ## SavedVariablesPerCharacter: BDS_LocalDB
 
