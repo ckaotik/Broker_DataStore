@@ -11,10 +11,10 @@ local QTip = LibStub("LibQTip-1.0")
 local fontDummy = ns.events:CreateFontString()
 local thisCharacter = DataStore:GetCharacter()
 
-local worldBosses 	= { 32099, 32098, 32518, 32519 }
+local worldBosses 	= { 32099, 32098, 32518, 32519, 33117, 33118 }
 local LFRDungeons 	= { {527, 528}, {529, 530}, {526}, {610, 611, 612, 613} }
 local weeklyQuests 	= { 32610, 32626, 32609, 32505, '32640|32641', '32719|32718', '32872|32862' }
-local currencies 	= { 396, 395, 738, 697, 752 } -- valor, justice, lesser/elder/mogu charm
+local currencies 	= { 396, 395, 738, 697, 752, 776 } -- valor, justice, lesser/elder/mogu/warforged charm
 --[[
 CONQUEST_CURRENCY = 390;
 HONOR_CURRENCY = 392;
@@ -38,7 +38,7 @@ local function getColumnHeaders(dataType)
 			'MV', 'HoF', 'ToES', 'ToT'
 	elseif dataType == 'boss' then
 		return BATTLE_PET_SOURCE_7, --BOSS,
-			tex(89317, 'Sha'), tex(89783, 'Galleon'), tex(85513, 'Nalak'), tex(95424, 'Oondasta')
+			tex(89317, 'Sha'), tex(89783, 'Galleon'), tex(85513, 'Nalak'), tex(95424, 'Oondasta'), tex(102145, 'Celestials'), tex(104297, 'Ordos')
 	elseif dataType == 'weekly' then
 		return CALENDAR_REPEAT_WEEKLY,
 			tex(94221, 'Stone'), tex(94222, 'Key'), tex(87391, 'Chest'), tex(93792, 'Chamberlain'), tex(90538, 'Champions'), tex(90815, 'Charms'), tex(97849, 'Barrens')
@@ -131,13 +131,13 @@ local function GetCharacterLockoutState(character, dungeonID)
 		local _, _, cleared, available = GetLFGDungeonRewardCapInfo(dungeonID)
 
 		numEncounters = cleared == 1 and numDefeated or (available * numEncounters)
-		return numDefeated, numEncounters
+		return numDefeated or 0, numEncounters or 0
 	else
 		local status, reset, numDefeated = DataStore:GetLFGInfo(character, dungeonID)
 		if status == true then
-			return numDefeated, numDefeated
+			return numDefeated or 0, numDefeated or 0
 		elseif status == false then
-			return numDefeated, numEncounters
+			return numDefeated or 0, numEncounters or 0
 		else
 			return 0, 0
 		end
