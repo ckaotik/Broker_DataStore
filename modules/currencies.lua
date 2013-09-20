@@ -12,7 +12,7 @@ local fontDummy = ns.events:CreateFontString()
 local thisCharacter = DataStore:GetCharacter()
 
 local worldBosses 	= { 32099, 32098, 32518, 32519, 33117, 33118 }
-local LFRDungeons 	= { {527, 528}, {529, 530}, {526}, {610, 611, 612, 613} }
+local LFRDungeons 	= { {527, 528}, {529, 530}, {526}, {610, 611, 612, 613}, {716, 717, 724, 725} }
 local weeklyQuests 	= { 32610, 32626, 32609, 32505, '32640|32641', '32719|32718', '32872|32862' }
 local currencies 	= { 396, 395, 738, 697, 752, 776 } -- valor, justice, lesser/elder/mogu/warforged charm
 --[[
@@ -35,7 +35,7 @@ local returnTable = {}
 local function getColumnHeaders(dataType)
 	if dataType == 'lfr' then
 		return RAID_FINDER,
-			'MV', 'HoF', 'ToES', 'ToT'
+			'MV', 'HoF', 'ToES', 'ToT', 'SoO'
 	elseif dataType == 'boss' then
 		return BATTLE_PET_SOURCE_7, --BOSS,
 			tex(89317, 'Sha'), tex(89783, 'Galleon'), tex(85513, 'Nalak'), tex(95424, 'Oondasta'), tex(102145, 'Celestials'), tex(104297, 'Ordos')
