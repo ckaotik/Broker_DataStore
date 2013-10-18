@@ -36,7 +36,7 @@ if IsAddOnLoaded("DataStore_Currencies") then
 		local function ToggleSetting(self, button)
 			if not BDS_GlobalDB.currencies[self.character] then BDS_GlobalDB.currencies[self.character] = {} end
 			BDS_GlobalDB.currencies[self.character][self.name] = self:GetChecked()
-			Broker_DS.currencies:UpdateLDB()
+			-- Broker_DS.currencies:UpdateLDB()
 		end
 		local function FetchEntry(i, isHeader)
 			-- retrieves or creates entry number #i
