@@ -13,7 +13,12 @@ local thisCharacter = DataStore:GetCharacter()
 
 local worldBosses 	= { 32099, 32098, 32518, 32519, 33117, 33118 }
 local LFRDungeons 	= { {527, 528}, {529, 530}, {526}, {610, 611, 612, 613}, {716, 717, 724, 725} }
-local weeklyQuests 	= { 32610, 32626, 32609, 32505, '32640|32641', '32719|32718', '32872|32862' }
+local weeklyQuests 	= {
+	32610, 32626, 32609, 32505, '32640|32641', -- Isle of Thunder (stone, key, chest, chamberlain, champions)
+	'32719|32718', -- lesser charms trade-in
+	-- '32872|32862', -- barrens
+	33338, 33334, --32956, -- timeless isle (epoch stone, rares, pirate chest)
+}
 local currencies 	= { 396, 395, 738, 697, 752, 776 } -- valor, justice, lesser/elder/mogu/warforged charm
 --[[
 CONQUEST_CURRENCY = 390;
@@ -40,8 +45,11 @@ local function getColumnHeaders(dataType)
 		return BATTLE_PET_SOURCE_7, --BOSS,
 			tex(89317, 'Sha'), tex(89783, 'Galleon'), tex(85513, 'Nalak'), tex(95424, 'Oondasta'), tex(102145, 'Celestials'), tex(104297, 'Ordos')
 	elseif dataType == 'weekly' then
-		return CALENDAR_REPEAT_WEEKLY,
-			tex(94221, 'Stone'), tex(94222, 'Key'), tex(87391, 'Chest'), tex(93792, 'Chamberlain'), tex(90538, 'Champions'), tex(90815, 'Charms'), tex(97849, 'Barrens')
+		return CALENDAR_REPEAT_WEEKLY
+			, tex(94221, 'Stone'), tex(94222, 'Key'), tex(87391, 'Chest'), tex(93792, 'Chamberlain'), tex(90538, 'Champions')
+			, tex(90815, 'Charms')
+			--, tex(97849, 'Barrens')
+			, tex(105715, 'Epoch'), tex(33847, 'Rares')
 	elseif dataType == 'currency' then
 		local val1, val2
 		wipe(returnTable)
