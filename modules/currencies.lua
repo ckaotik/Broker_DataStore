@@ -277,14 +277,14 @@ local function ShowTooltip(self)
 		end
 	end
 
-	tooltip:AddLine(' ')
-	tooltip:AddHeader(getColumnHeaders('currency'))
-	for _, charData in ipairs(ns.characters) do
-		data = GetCharacterCurrencies(charData.key, true)
-		if data then
-			tooltip:AddLine(charData.coloredName, unpack(data))
-		end
-	end
+	-- tooltip:AddLine(' ')
+	-- tooltip:AddHeader(getColumnHeaders('currency'))
+	-- for _, charData in ipairs(ns.characters) do
+	-- 	data = GetCharacterCurrencies(charData.key, true)
+	-- 	if data then
+	-- 		tooltip:AddLine(charData.coloredName, unpack(data))
+	-- 	end
+	-- end
 
 	-- Use smart anchoring code to anchor the tooltip to our frame
 	tooltip:SmartAnchorTo(self)
